@@ -25,15 +25,35 @@ app.get('/route-weather', async (req, res) => {
       params: {
         api_key: process.env.OPENROUTESERVICE_API_KEY,
         start,
-        end
+        end,
+        instructions: false, // We don't need detailed instructions, so we turn this off
+        maneuvers: false
       }
     });
 
     const routeData = routeResponse.data;
     const coordinates = routeData.features[0].geometry.coordinates;
+    const distance = routeData.features[0].properties.segments[0].distance; // Distance in meters
+    const duration = routeData.features[0].properties.segments[0].duration; // Duration in seconds
+
+    // Convert distance to kilometers and duration to hours
+    const distanceInKm = (distance / 1000).toFixed(2);
+    const durationInHours = (duration / 3600).toFixed(2);
+
+    // Estimate traffic condition based on duration and distance
+    let trafficCondition;
+    const avgSpeed = (distanceInKm / durationInHours).toFixed(2); // km/h
+    if (avgSpeed > 80) {
+      trafficCondition = "Light Traffic";
+    } else if (avgSpeed > 40) {
+      trafficCondition = "Moderate Traffic";
+    } else {
+      trafficCondition = "Heavy Traffic";
+    }
 
     // Array to store weather data for each point
     const weatherData = [];
+    let previousLocation = ''; // Variable to store the previous location name
 
     // Fetch weather and location name for key points along the route
     for (let i = 0; i < coordinates.length; i += Math.floor(coordinates.length / 10)) {
@@ -63,23 +83,34 @@ app.get('/route-weather', async (req, res) => {
       });
 
       const locationData = locationResponse.data.features;
-      // Try to get a locality name, otherwise fall back to county or region
       const location = locationData.length > 0
         ? locationData[0].properties.name
         : `(${lat}, ${lon})`;
 
-      weatherData.push({
-        location,
-        weather: `${weather.weather[0].description}, ${weather.main.temp}°C`
-      });
+      // Only add the location if it is different from the previous one
+      if (location !== previousLocation) {
+        weatherData.push({
+          location,
+          weather: `${weather.weather[0].description}, ${weather.main.temp}°C`
+        });
+        previousLocation = location; // Update previous location
+      }
     }
 
-    res.json({ weatherData });
+    // Return the weather data, total distance, estimated time, and traffic conditions
+    res.json({
+      weatherData,
+      distance: distanceInKm,
+      duration: durationInHours,
+      traffic: trafficCondition
+    });
   } catch (error) {
     console.error('Error fetching route or weather data:', error.response ? error.response.data : error.message);
     res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
+
+
 
 
 

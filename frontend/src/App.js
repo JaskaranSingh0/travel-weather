@@ -6,20 +6,33 @@ import WeatherInfo from './components/WeatherInfo';
 const App = () => {
   const [weatherData, setWeatherData] = useState(null);
 
-  const fetchWeatherData = async (start, end) => {
+  const fetchWeatherData = async (startLocation, endLocation) => {
     try {
-      const response = await axios.get(`http://localhost:5000/route-weather`, {
-        params: { start, end }
+      // Fetch coordinates for the start location
+      const startResponse = await axios.get(`http://localhost:5000/geocode`, {
+        params: { location: startLocation }
       });
-      
-      console.log('Response Data:', response.data); // Log the response data
-  
+
+      const startCoords = `${startResponse.data.lon},${startResponse.data.lat}`;
+
+      // Fetch coordinates for the end location
+      const endResponse = await axios.get(`http://localhost:5000/geocode`, {
+        params: { location: endLocation }
+      });
+
+      const endCoords = `${endResponse.data.lon},${endResponse.data.lat}`;
+
+      // Fetch weather data using the coordinates
+      const response = await axios.get(`http://localhost:5000/route-weather`, {
+        params: { start: startCoords, end: endCoords }
+      });
+
       setWeatherData(response.data.weatherData);
     } catch (error) {
       console.error('Error fetching weather data:', error);
+      setWeatherData(null);
     }
   };
-  
 
   return (
     <div>

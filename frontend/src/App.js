@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import RouteForm from './components/RouteForm';
 import WeatherInfo from './components/WeatherInfo';
+import MapView from './components/MapView'; // Import MapView component
 
 const App = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [traffic, setTraffic] = useState(null);
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
 
   const fetchWeatherData = async (startLocation, endLocation) => {
     try {
@@ -25,7 +27,7 @@ const App = () => {
 
       const endCoords = `${endResponse.data.lon},${endResponse.data.lat}`;
 
-      // Fetch weather data and distance using the coordinates
+      // Fetch weather data, route coordinates, and other details using the coordinates
       const response = await axios.get(`http://localhost:5000/route-weather`, {
         params: { start: startCoords, end: endCoords }
       });
@@ -34,12 +36,14 @@ const App = () => {
       setDistance(response.data.distance);
       setDuration(response.data.duration);
       setTraffic(response.data.traffic);
+      setRouteCoordinates(response.data.routeCoordinates); // Set the route coordinates
     } catch (error) {
       console.error('Error fetching weather data:', error);
       setWeatherData(null);
       setDistance(null);
       setDuration(null);
       setTraffic(null);
+      setRouteCoordinates([]);
     }
   };
 
@@ -51,6 +55,10 @@ const App = () => {
       {duration && <h2>Estimated Travel Time: {duration} hours</h2>}
       {traffic && <h2>Traffic Conditions: {traffic}</h2>}
       <WeatherInfo weatherData={weatherData} />
+      {/* Render the MapView component only if routeCoordinates are available */}
+      {routeCoordinates.length > 0 && (
+        <MapView routeCoordinates={routeCoordinates} weatherData={weatherData} />
+      )}
     </div>
   );
 };

@@ -75,7 +75,9 @@ app.get('/route-weather', async (req, res) => {
         icon: weather.weather[0].icon,
         temperature: weather.main.temp,
         humidity: weather.main.humidity,
-        windSpeed: weather.wind.speed
+        windSpeed: weather.wind.speed,
+        lat,
+        lon
       };
 
       // Fetch location name using reverse geocoding from OpenRouteService
@@ -104,12 +106,13 @@ app.get('/route-weather', async (req, res) => {
       }
     }
 
-    // Return the weather data, total distance, estimated time, and traffic conditions
+    // Return the weather data, route coordinates, total distance, estimated time, and traffic conditions
     res.json({
       weatherData,
       distance: distanceInKm,
       duration: durationInHours,
-      traffic: trafficCondition
+      traffic: trafficCondition,
+      routeCoordinates: coordinates
     });
   } catch (error) {
     console.error('Error fetching route or weather data:', error.response ? error.response.data : error.message);

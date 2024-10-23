@@ -26,15 +26,15 @@ app.get('/route-weather', async (req, res) => {
         api_key: process.env.OPENROUTESERVICE_API_KEY,
         start,
         end,
-        instructions: false, // We don't need detailed instructions, so we turn this off
+        instructions: false,
         maneuvers: false
       }
     });
 
     const routeData = routeResponse.data;
     const coordinates = routeData.features[0].geometry.coordinates;
-    const distance = routeData.features[0].properties.segments[0].distance; // Distance in meters
-    const duration = routeData.features[0].properties.segments[0].duration; // Duration in seconds
+    const distance = routeData.features[0].properties.segments[0].distance;
+    const duration = routeData.features[0].properties.segments[0].duration;
 
     // Convert distance to kilometers and duration to hours
     const distanceInKm = (distance / 1000).toFixed(2);
@@ -42,7 +42,7 @@ app.get('/route-weather', async (req, res) => {
 
     // Estimate traffic condition based on duration and distance
     let trafficCondition;
-    const avgSpeed = (distanceInKm / durationInHours).toFixed(2); // km/h
+    const avgSpeed = (distanceInKm / durationInHours).toFixed(2);
     if (avgSpeed > 80) {
       trafficCondition = "Light Traffic";
     } else if (avgSpeed > 40) {
@@ -53,7 +53,7 @@ app.get('/route-weather', async (req, res) => {
 
     // Array to store weather data for each point
     const weatherData = [];
-    let previousLocation = ''; // Variable to store the previous location name
+    let previousLocation = '';
 
     // Fetch weather and location name for key points along the route
     for (let i = 0; i < coordinates.length; i += Math.floor(coordinates.length / 10)) {
@@ -65,20 +65,29 @@ app.get('/route-weather', async (req, res) => {
           lat,
           lon,
           appid: process.env.OPENWEATHERMAP_API_KEY,
-          units: 'metric' // Change to 'imperial' for Fahrenheit
+          units: 'metric'
         }
       });
 
       const weather = weatherResponse.data;
+      const weatherDetails = {
+        description: weather.weather[0].description,
+        icon: weather.weather[0].icon,
+        temperature: weather.main.temp,
+        humidity: weather.main.humidity,
+        windSpeed: weather.wind.speed,
+        lat,
+        lon
+      };
 
       // Fetch location name using reverse geocoding from OpenRouteService
       const locationResponse = await axios.get(`https://api.openrouteservice.org/geocode/reverse`, {
         params: {
           api_key: process.env.OPENROUTESERVICE_API_KEY,
-          'point.lat': lat, // Separate parameters for latitude
-          'point.lon': lon, // Separate parameters for longitude
-          size: 1, // Limit results to one
-          layers: 'locality,county,region' // Use multiple layers for better coverage
+          'point.lat': lat,
+          'point.lon': lon,
+          size: 1,
+          layers: 'locality,county,region'
         }
       });
 
@@ -91,18 +100,19 @@ app.get('/route-weather', async (req, res) => {
       if (location !== previousLocation) {
         weatherData.push({
           location,
-          weather: `${weather.weather[0].description}, ${weather.main.temp}°C`
+          ...weatherDetails
         });
-        previousLocation = location; // Update previous location
+        previousLocation = location;
       }
     }
 
-    // Return the weather data, total distance, estimated time, and traffic conditions
+    // Return the weather data, route coordinates, total distance, estimated time, and traffic conditions
     res.json({
       weatherData,
       distance: distanceInKm,
       duration: durationInHours,
-      traffic: trafficCondition
+      traffic: trafficCondition,
+      routeCoordinates: coordinates
     });
   } catch (error) {
     console.error('Error fetching route or weather data:', error.response ? error.response.data : error.message);

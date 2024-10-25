@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import RouteForm from './components/RouteForm';
 import WeatherInfo from './components/WeatherInfo';
-import MapView from './components/MapView'; // Import MapView component
+import MapView from './components/MapView';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App = () => {
   const [weatherData, setWeatherData] = useState(null);
@@ -48,16 +49,25 @@ const App = () => {
   };
 
   return (
-    <div>
-      <h1>Travel Weather</h1>
-      <RouteForm onSearch={fetchWeatherData} />
-      {distance && <h2>Total Distance: {distance} km</h2>}
-      {duration && <h2>Estimated Travel Time: {duration} hours</h2>}
-      {traffic && <h2>Traffic Conditions: {traffic}</h2>}
-      <WeatherInfo weatherData={weatherData} />
-      {/* Render the MapView component only if routeCoordinates are available */}
+    <div className="container my-4">
+      <h1 className="text-center mb-4">Travel Weather</h1>
+      <div className="card p-4 mb-4 shadow-sm">
+        <RouteForm onSearch={fetchWeatherData} />
+      </div>
+      {distance && (
+        <div className="alert alert-info">
+          <h2>Total Distance: {distance} km</h2>
+          <h2>Estimated Travel Time: {duration} hours</h2>
+          <h2>Traffic Conditions: {traffic}</h2>
+        </div>
+      )}
+      <div className="card p-4 mb-4 shadow-sm">
+        <WeatherInfo weatherData={weatherData} />
+      </div>
       {routeCoordinates.length > 0 && (
-        <MapView routeCoordinates={routeCoordinates} weatherData={weatherData} />
+        <div className="card p-4 shadow-sm">
+          <MapView routeCoordinates={routeCoordinates} weatherData={weatherData} />
+        </div>
       )}
     </div>
   );

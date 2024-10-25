@@ -7,19 +7,25 @@ const WeatherInfo = ({ weatherData }) => {
 
   return (
     <div>
-      <h2>Weather Information Along the Route</h2>
-      <ul>
+      <h2 className="mb-4">Weather Information Along the Route</h2>
+      <ul className="list-group">
         {weatherData.map((point, index) => (
-          <li key={index}>
-            <strong>{point.location}</strong>: {point.description}, {point.temperature}°C
-            <img
-              src={`https://openweathermap.org/img/wn/${point.icon}.png`}
-              alt={point.description}
-            />
-            <ul>
-              <li>Humidity: {point.humidity}%</li>
-              <li>Wind Speed: {point.windSpeed} m/s</li>
-            </ul>
+          <li key={index} className="list-group-item d-flex align-items-center">
+            <div className="me-3">
+              <img
+                src={`https://openweathermap.org/img/wn/${point.icon}.png`}
+                alt={point.description}
+              />
+            </div>
+            <div>
+              <h5 className="mb-2">
+                <strong>{point.location}</strong>: {point.description}, {point.temperature}°C
+              </h5>
+              <ul className="list-unstyled mb-0">
+                <li>Humidity: {point.humidity}%</li>
+                <li>Wind Speed: {point.windSpeed} m/s</li>
+              </ul>
+            </div>
           </li>
         ))}
       </ul>

@@ -13,3 +13,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Style for the suggestions dropdown */
+.list-group.position-absolute {
+  z-index: 1000; /* Ensure the dropdown appears above other elements */
+  max-height: 150px; /* Limit the dropdown height */
+  overflow-y: auto; /* Enable scrolling if there are many suggestions */
+  width: 100%; /* Make the dropdown match the width of the input */
+  top: 100%; /* Position it right below the input field */
+  left: 0;
+}
+/* Optional: style each suggestion item */
+.list-group-item-action:hover {
+  background-color: #f0f0f0; /* Light gray background on hover */
+}
+

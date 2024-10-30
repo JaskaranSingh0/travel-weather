@@ -57,7 +57,7 @@ const App = () => {
       {distance && (
         <div className="alert alert-info">
           <h2>Total Distance: {distance} km</h2>
-          <h2>Estimated Travel Time: {duration} hours</h2>
+          <h2>Estimated Travel Time (Approx.): {duration} hours</h2>
           <h2>Traffic Conditions: {traffic}</h2>
         </div>
       )}

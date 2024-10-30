@@ -1,0 +1,43 @@
+:root {
+    /* Bootstrap variable overrides */
+    --bs-primary: #4CAF50; /* Change primary color to green */
+    --bs-secondary: #FFC107; /* Change secondary color to amber */
+    --bs-info: #60b6c5; /* Change info color */
+    --bs-danger: #dc3545; /* Change danger color */
+    --bs-warning: #ffc107; /* Change warning color */
+    --bs-success: #03942c; /* Change success color */
+    --bs-light: #f8f9fa; /* Light background color */
+    --bs-dark: #000000; /* Dark background color */
+    --bs-font-family-sans-serif: 'Arial', sans-serif; /* Change font */
+  }
+  
+  /* Custom styles for the body */
+  body {
+    background-color: var(--bs-light);
+    font-family: var(--bs-font-family-sans-serif);
+  }
+  
+  /* Customize card borders and shadows */
+  .card {
+    border-color: var(--bs-primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Customize the alert style */
+  .alert-info {
+    background-color: var(--bs-info);
+    border-color: var(--bs-info);
+    color: rgb(255, 255, 255);
+  }
+  
+  /* Style the button */
+  .btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+  
+  /* Custom styles for headings */
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--bs-dark);
+  }
+  

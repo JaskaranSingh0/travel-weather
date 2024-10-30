@@ -19,7 +19,7 @@ const WeatherInfo = ({ weatherData }) => {
             </div>
             <div>
               <h5 className="mb-2">
-                <strong>{point.location}</strong>: {point.description}, {point.temperature}°C
+                <strong>{point.location}</strong> (Arrival: {point.estimatedArrivalTime}): {point.description}, {point.temperature}°C
               </h5>
               <ul className="list-unstyled mb-0">
                 <li>Humidity: {point.humidity}%</li>

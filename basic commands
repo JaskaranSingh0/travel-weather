@@ -1,0 +1,39 @@
+git:
+Step 1: Open Terminal in Your Project Directory
+Note: Make sure you’re in the root directory of your project (travel-weather).
+
+Step 2: Add Changes to Git
+Run the following command to stage all your changes:
+
+git add .
+
+
+Step 3: Commit the Changes
+Commit the staged changes with a meaningful commit message:
+
+git commit -m "Corrected time and added new features"
+
+
+Step 4: Push Changes to GitHub
+Push the changes to the remote repository on GitHub. If you have set up the remote already (from a previous session), you can use:
+
+git push origin master
+
+
+Note: If your branch is named something other than main, replace main with your branch name.
+
+
+
+
+
+C:\under construction\travel-weather\backend>: node index.js
+
+
+C:\under construction\travel-weather\frontend>: npm start 
+
+
+
+
+APIS: 
+https://home.openweathermap.org/users/sign_in
+https://openrouteservice.org/dev/#/login

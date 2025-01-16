@@ -1,4 +1,22 @@
 
+.wrapper{
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(to bottom right, #0F2027,#203A43, #f64f59);
+  overflow-x: hidden;
+}
+.container {
+  /* background: rgba(255, 255, 255, 0.9); Semi-transparent white background for content */
+  background: linear-gradient(to bottom right #f6f6f8); 
+  /*backdrop-filter: blur(200px); /* Apply a blur effect */
+  width: 100%;/* Replace colors as needed */
+  padding: 20px;
+  border-radius: 15px; /* Smooth rounded corners */
+  box-shadow: 0 20px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for contrast */
+  max-width: 800px; 
+  width: 100%; /* Responsive full width on smaller screens */
+  height: auto; /* Adjust height based on content */
+}
 
 body {
   margin: 0;

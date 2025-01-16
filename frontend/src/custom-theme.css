@@ -20,8 +20,10 @@
   /* Customize card borders and shadows */
   .card {
     border-color: var(--bs-primary);
+    /* background:linear-gradient(to bottom right #373B44,#4286f4);   */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
+
   
   /* Customize the alert style */
   .alert-info {

@@ -23,7 +23,8 @@ const MapView = ({ routeCoordinates, weatherData }) => {
     : [32.7266, 74.8794]; // Default center position
 
   return (
-    <MapContainer center={initialPosition} zoom={10} style={{ height: '400px', width: '100%' }}>
+    <MapContainer center={initialPosition} zoom={10} style={{ height: 'calc(100vh - 150px)', width: '100%' }}>
+
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

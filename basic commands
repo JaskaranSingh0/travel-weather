@@ -17,7 +17,7 @@ git commit -m "Corrected time and added new features"
 Step 4: Push Changes to GitHub
 Push the changes to the remote repository on GitHub. If you have set up the remote already (from a previous session), you can use:
 
-git push origin master
+git push 
 
 
 Note: If your branch is named something other than main, replace main with your branch name.

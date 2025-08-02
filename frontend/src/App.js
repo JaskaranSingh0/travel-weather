@@ -1,72 +1,105 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useWeatherData } from './hooks/useWeatherData';
 import RouteForm from './components/RouteForm';
 import WeatherInfo from './components/WeatherInfo';
 import MapView from './components/MapView';
+import ErrorBoundary from './components/ErrorBoundary';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './custom-theme.css';
+
 
 const App = () => {
   const [routeCoordinates, setRouteCoordinates] = useState([]);
-  const [weatherData, setWeatherData] = useState(null);
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [traffic, setTraffic] = useState(null);
+  const { data, loading, error, fetchWeatherData } = useWeatherData();
 
-  const fetchWeatherData = async (startLocation, endLocation) => {
-    try {
-      // Convert the start location into coordinates
-      const startResponse = await axios.get(`http://localhost:5000/geocode`, {
-        params: { location: startLocation },
-      });
-      const startCoords = `${startResponse.data.lon},${startResponse.data.lat}`;
-
-      // Convert the end location into coordinates
-      const endResponse = await axios.get(`http://localhost:5000/geocode`, {
-        params: { location: endLocation },
-      });
-      const endCoords = `${endResponse.data.lon},${endResponse.data.lat}`;
-
-      // Fetch route, weather, and other data using the coordinates
-      const response = await axios.get(`http://localhost:5000/route-weather`, {
-        params: { start: startCoords, end: endCoords },
-      });
-
-      setRouteCoordinates(response.data.routeCoordinates);
-      setWeatherData(response.data.weatherData);
-      setDistance(response.data.distance);
-      setDuration(response.data.duration);
-      setTraffic(response.data.traffic);
-    } catch (error) {
-      console.error('Error fetching weather data:', error);
+  // When data changes, update local state for routeCoordinates, distance, duration, traffic, weatherData
+  React.useEffect(() => {
+    if (data) {
+      setRouteCoordinates(data.routeCoordinates || []);
+      setDistance(data.distance || null);
+      setDuration(data.duration || null);
+      setTraffic(data.traffic || null);
     }
-  };
+  }, [data]);
 
   return (
-    <div className='wrapper' >
-    <div className="container my-4">
-      <h1 className="text-center mb-4 text-white">Travel Weather</h1>
-      <div className="card p-4 mb-4 shadow-sm">
-        <RouteForm onSearch={fetchWeatherData} />
+    <ErrorBoundary>
+      <div className='wrapper'>
+        <div className="container">
+          <h1 className="main-title">🌤️ Travel Weather</h1>
+          
+          <div className="card p-4 mb-4">
+            <RouteForm onSearch={fetchWeatherData} loading={loading} />
+          </div>
+          
+          {loading && (
+            <div className="alert alert-info text-center loading-container">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <div className="loading-text">Fetching weather data along your route...</div>
+            </div>
+          )}
+          
+          {error && (
+            <div className="alert alert-danger">
+              <strong>⚠️ Error:</strong> {error}
+            </div>
+          )}
+          
+          {distance && !loading && (
+            <div className="stats-container">
+              <div className="stat-item">
+                <div className="stat-value">{distance}</div>
+                <div className="stat-label">Kilometers</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{duration}</div>
+                <div className="stat-label">Hours</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{traffic}</div>
+                <div className="stat-label">Traffic</div>
+              </div>
+            </div>
+          )}
+          
+          {data && data.weatherData && (
+            <div className="card p-4 mb-4">
+              <WeatherInfo weatherData={data.weatherData} />
+            </div>
+          )}
+          
+          {routeCoordinates.length > 0 && (
+            <div className="card p-4">
+              <h2>🗺️ Route Map</h2>
+              <div className="map-container">
+                <MapView routeCoordinates={routeCoordinates} weatherData={data ? data.weatherData : null} />
+              </div>
+            </div>
+          )}
+          
+          <footer className="text-center mt-5" style={{ 
+            padding: '30px 0',
+            borderTop: '2px solid rgba(102, 126, 234, 0.1)',
+            background: 'rgba(255, 255, 255, 0.5)',
+            borderRadius: '16px',
+            marginTop: '40px'
+          }}>
+            <p style={{ 
+              margin: 0, 
+              color: '#718096',
+              fontWeight: '500'
+            }}>
+              🌤️ Built with ❤️ for travelers • Weather data by OpenWeatherMap • Routes by OpenRouteService
+            </p>
+          </footer>
+        </div>
       </div>
-      {distance && (
-        <div className="alert alert-info">
-          <h2>Total Distance: {distance} km</h2>
-          <h2>Estimated Travel Time (Approx.): {duration} hours</h2>
-          <h2>Traffic Conditions: {traffic}</h2>
-        </div>
-      )}
-      {weatherData && (
-        <div className="card p-4 mb-4 shadow-sm ">
-          <WeatherInfo weatherData={weatherData} />
-        </div>
-      )}
-      {routeCoordinates.length > 0 && (
-        <div className="card p-4 shadow-sm">
-          <MapView routeCoordinates={routeCoordinates} weatherData={weatherData} />
-        </div>
-      )}
-    </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

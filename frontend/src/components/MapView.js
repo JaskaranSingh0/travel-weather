@@ -3,9 +3,15 @@ import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import pinIcon from '../aasets/pin.png';
+import pinIcon from '../assets/pin.png';
 
-
+// Fix for default markers in React-Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
 
 // Custom icon definition
 const customIcon = L.icon({
@@ -22,8 +28,18 @@ const MapView = ({ routeCoordinates, weatherData }) => {
     ? [routeCoordinates[0][1], routeCoordinates[0][0]]
     : [32.7266, 74.8794]; // Default center position
 
+  // Create a unique key for the map to force re-render when route changes
+  const mapKey = routeCoordinates.length > 0 
+    ? `${routeCoordinates[0][0]}-${routeCoordinates[0][1]}-${routeCoordinates[routeCoordinates.length-1][0]}-${routeCoordinates[routeCoordinates.length-1][1]}`
+    : 'default';
+
   return (
-    <MapContainer center={initialPosition} zoom={10} style={{ height: 'calc(100vh - 150px)', width: '100%' }}>
+    <MapContainer 
+      key={mapKey}
+      center={initialPosition} 
+      zoom={10} 
+      style={{ height: 'calc(100vh - 150px)', width: '100%' }}
+    >
 
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

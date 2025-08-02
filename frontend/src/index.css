@@ -1,28 +1,49 @@
 
 .wrapper{
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(to bottom right, #0F2027,#203A43, #f64f59);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow-x: hidden;
+  padding: 20px 0;
 }
+
 .container {
-  /* background: rgba(255, 255, 255, 0.9); Semi-transparent white background for content */
-  background: linear-gradient(to bottom right #f6f6f8); 
-  /*backdrop-filter: blur(200px); /* Apply a blur effect */
-  width: 100%;/* Replace colors as needed */
-  padding: 20px;
-  border-radius: 15px; /* Smooth rounded corners */
-  box-shadow: 0 20px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for contrast */
-  max-width: 800px; 
-  width: 100%; /* Responsive full width on smaller screens */
-  height: auto; /* Adjust height based on content */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  width: 95%;
+  margin: 0 auto;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -32,17 +53,83 @@ code {
     monospace;
 }
 
+/* Enhanced title styling */
+.main-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.main-title::after {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 15px auto;
+  border-radius: 2px;
+}
+
 /* Style for the suggestions dropdown */
 .list-group.position-absolute {
-  z-index: 1000; /* Ensure the dropdown appears above other elements */
-  max-height: 150px; /* Limit the dropdown height */
-  overflow-y: auto; /* Enable scrolling if there are many suggestions */
-  width: 100%; /* Make the dropdown match the width of the input */
-  top: 100%; /* Position it right below the input field */
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  width: 100%;
+  top: 100%;
   left: 0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: none;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
 }
-/* Optional: style each suggestion item */
+
+.list-group-item-action {
+  border: none;
+  padding: 15px 20px;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
 .list-group-item-action:hover {
-  background-color: #f0f0f0; /* Light gray background on hover */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: translateX(5px);
+}
+
+/* Custom scrollbar */
+.list-group.position-absolute::-webkit-scrollbar {
+  width: 6px;
+}
+
+.list-group.position-absolute::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.list-group.position-absolute::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
+}
+
+/* Loading animation */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.loading-text {
+  margin-left: 15px;
+  font-weight: 500;
+  color: #667eea;
 }
 

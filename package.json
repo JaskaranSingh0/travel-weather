@@ -1,5 +1,23 @@
 {
+  "name": "travel-weather",
+  "version": "1.0.0",
+  "description": "A web application that provides real-time and predictive weather information along travel routes",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "keywords": ["weather", "travel", "route", "react", "node"],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "bootstrap": "^5.3.3"
+    "bootstrap": "^5.3.7"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

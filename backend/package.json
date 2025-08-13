@@ -17,7 +17,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-validator": "^7.0.1",
-    "gopd": "^1.0.1"
+    "gopd": "^1.0.1",
+    "travel-weather": "file:.."
   },
   "devDependencies": {
     "nodemon": "^3.0.0"

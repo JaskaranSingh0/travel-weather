@@ -21,11 +21,17 @@ services:
       - key: FRONTEND_ORIGIN
         sync: false
 
-  - type: static
+  # Frontend as a Node Web Service (serving build via 'serve')
+  - type: web
     name: travel-weather-frontend
+    env: node
     rootDir: frontend
+    plan: free
     buildCommand: npm install && npm run build
-    publishPath: build
+    startCommand: npm start
+    autoDeploy: true
     envVars:
+      - key: NODE_VERSION
+        value: 18
       - key: REACT_APP_API_BASE_URL
-        sync: false # Set to backend URL after first backend deploy (e.g. https://travel-weather-backend.onrender.com)
+        sync: false  # Set to backend URL after first backend deploy

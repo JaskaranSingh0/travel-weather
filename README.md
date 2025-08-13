@@ -203,3 +203,56 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 <div align="center" style="margin-top: 32px;">
   <b>🌤️ Travel Weather — Plan smart, travel safe!</b>
 </div>
+
+---
+
+## 🚀 Deployment (Render - Option 1: Separate Backend & Static Frontend)
+
+### 1. Prepare Environment Variables
+Create the following environment variables in the Render dashboard (do NOT commit keys):
+- OPENROUTESERVICE_API_KEY
+- OPENWEATHERMAP_API_KEY
+- (Optional) SSL_VERIFY=false (only if you experience local SSL issues; omit in production)
+- (After frontend deploy) REACT_APP_API_BASE_URL (set in static site) = https://YOUR-BACKEND-SERVICE.onrender.com
+- (Optional) FRONTEND_ORIGIN (set in backend) = https://YOUR-FRONTEND-SERVICE.onrender.com to lock CORS
+
+### 2. Backend Service (Web Service)
+- Type: Web Service (Node)
+- Root Directory: backend
+- Build Command: npm install
+- Start Command: node index.js
+- Node Version: 18+ (set NODE_VERSION=18 if needed)
+
+### 3. Frontend Service (Static Site)
+- Type: Static Site
+- Root Directory: frontend
+- Build Command: npm install && npm run build
+- Publish Directory: build
+- Initially leave REACT_APP_API_BASE_URL empty; after backend deploys copy its URL and add it, then redeploy frontend.
+
+### 4. CORS Configuration
+The backend auto-allows all origins unless FRONTEND_ORIGIN is set. Once frontend URL is live, set FRONTEND_ORIGIN to restrict access.
+
+### 5. Optional: render.yaml
+A `render.yaml` file is included for Infrastructure as Code. To use it:
+- Push repo to GitHub
+- In Render: New + Blueprint -> point to repo
+- Fill in unsynced environment variables (API keys, REACT_APP_API_BASE_URL after first backend deploy)
+
+### 6. Testing After Deploy
+1. Hit: https://YOUR-BACKEND-SERVICE.onrender.com/test
+   - Should return { status: 'APIs working', ... }
+2. From browser console on frontend site, verify calls to /route-weather succeed.
+3. Set REACT_APP_API_BASE_URL correctly if 404 or CORS errors appear.
+
+### 7. Common Issues
+- 401 errors: Check API key values and rate limits.
+- CORS error: Ensure FRONTEND_ORIGIN matches deployed frontend URL (including https://).
+- Mixed content: Always use https URLs in REACT_APP_API_BASE_URL.
+- Empty weather data: Possible API quota or network restriction; check backend logs.
+
+### 8. Redeploy Flow
+- Backend code changes: Trigger backend redeploy only.
+- Frontend env var changes: Update env var -> Save -> Trigger redeploy static site.
+
+---

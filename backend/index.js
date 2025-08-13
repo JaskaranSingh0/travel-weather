@@ -49,7 +49,15 @@ const PORT = process.env.PORT || 5000;
 console.log(`SSL Verification: ${process.env.SSL_VERIFY !== 'false' ? 'Enabled' : 'Disabled'}`);
 console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
-app.use(cors());
+// Dynamic CORS: allow configured frontend origin in production, fallback to all in development
+const allowedOrigin = process.env.FRONTEND_ORIGIN;
+if (allowedOrigin) {
+  console.log(`CORS restricted to origin: ${allowedOrigin}`);
+  app.use(cors({ origin: allowedOrigin }));
+} else {
+  console.log('CORS: allowing all origins (no FRONTEND_ORIGIN set)');
+  app.use(cors());
+}
 app.use(express.json());
 
 // Test endpoint to check API connectivity

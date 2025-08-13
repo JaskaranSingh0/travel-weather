@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: travel-weather-backend
+    env: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: SSL_VERIFY
+        value: 'false'
+      # Add API keys in Render dashboard (do not commit real values)
+      - key: OPENROUTESERVICE_API_KEY
+        sync: false
+      - key: OPENWEATHERMAP_API_KEY
+        sync: false
+      # Optionally restrict CORS after frontend deployed
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  - type: static
+    name: travel-weather-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: build
+    envVars:
+      - key: REACT_APP_API_BASE_URL
+        sync: false # Set to backend URL after first backend deploy (e.g. https://travel-weather-backend.onrender.com)

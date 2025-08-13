@@ -334,6 +334,32 @@ After deployment, test these endpoints:
 2. **API Test**: `https://your-app.onrender.com/api/test` (should return API status)
 3. **Route Weather**: Use the frontend form to test complete functionality
 
+### 4. Render Deployment Troubleshooting
+
+If you encounter the error "Cannot find module './gOPD'" or similar dependency issues:
+
+1. **Check Render Build Logs**: Look for the specific error
+2. **Verify Configuration**: Ensure render.yaml uses root directory
+3. **Environment Variables**: Make sure API keys are set in Render dashboard
+4. **Manual Service Setup**: If render.yaml fails, create service manually:
+   - **Build Command**: `npm run render-build`  
+   - **Start Command**: `npm start`
+   - **Root Directory**: Leave empty (uses project root)
+
+### 5. Manual Render Service Configuration
+If using render.yaml fails, create the service manually with these settings:
+```
+Service Type: Web Service
+Environment: Node
+Build Command: npm run render-build
+Start Command: npm start
+Environment Variables:
+  NODE_VERSION=18.20.8
+  OPENROUTESERVICE_API_KEY=your_actual_key
+  OPENWEATHERMAP_API_KEY=your_actual_key
+  SSL_VERIFY=false
+```
+
 ### 4. Local Development vs Production
 
 #### For Development (Two Services):
@@ -354,10 +380,26 @@ npm start            # Start single service on :5000
 - ✅ **Easy Maintenance**: Single codebase, single deployment
 - ✅ **Environment Consistency**: Same environment for both frontend and backend
 
-### 6. Common Issues & Solutions
-- **Build Failures**: Ensure all dependencies are in package.json files
-- **API Errors**: Check environment variables are set correctly
+### 4. Common Issues & Solutions
+
+#### **Build/Deployment Issues:**
+- **Module not found errors (like `gopd`)**: Clean install dependencies
+  ```bash
+  # Local fix
+  rm -rf node_modules backend/node_modules frontend/node_modules
+  npm run render-build
+  ```
+- **Render deployment timeout**: Check build logs, ensure API keys are set
+- **Node version issues**: Render supports Node.js 18+, project specifies >=18.20.8
+
+#### **Runtime Issues:**
+- **API Errors**: Check environment variables are set correctly in Render dashboard
 - **404 on Routes**: Verify catchall route serves index.html
 - **Empty Weather Data**: Check API key quotas and backend logs
+- **CORS Issues**: Should not occur with single service, but check if `FRONTEND_ORIGIN` is mistakenly set
+
+#### **Local Development Issues:**
+- **Port conflicts**: Make sure no other services are running on ports 3000 or 5000
+- **SSL Certificate errors**: Set `SSL_VERIFY=false` in backend/.env for development
 
 ---

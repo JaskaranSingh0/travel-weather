@@ -109,7 +109,6 @@ cd travel-weather
 cd backend
 cp .env.example .env # Create your .env file and add your API keys
 npm install
-npm run dev # or npm start
 ```
 
 #### Example `.env` file:
@@ -118,6 +117,7 @@ npm run dev # or npm start
 OPENROUTESERVICE_API_KEY=your_openrouteservice_api_key
 OPENWEATHERMAP_API_KEY=your_openweathermap_api_key
 SSL_VERIFY=false # (optional, for local dev)
+NODE_ENV=development
 ```
 
 ### 3. Frontend Setup
@@ -125,10 +125,73 @@ SSL_VERIFY=false # (optional, for local dev)
 ```bash
 cd ../frontend
 npm install
-npm start
 ```
 
-The app will be available at [http://localhost:3000](http://localhost:3000) and will connect to the backend at [http://localhost:5000](http://localhost:5000) by default.
+### 4. Development vs Production
+
+#### For Development (Recommended):
+```bash
+# From project root
+npm run dev
+```
+This runs frontend development server on port 3000 and backend on port 5000.
+
+#### For Production Testing (Single Service):
+```bash
+# From project root
+npm run render-build  # Build frontend
+npm start            # Start single service on port 5000
+```
+
+The single service will serve both the React app and API from [http://localhost:5000](http://localhost:5000).
+
+### 5. Available Scripts
+
+From the project root:
+- `npm run dev` - Development mode (frontend on :3000, backend on :5000)
+- `npm run render-build` - Build frontend for production
+- `npm start` - Start production single service
+- `npm run server` - Backend development server only
+- `npm run client` - Frontend development server only
+
+---
+
+## 🏗️ Architecture
+
+### Single Service Design
+This application uses a **unified single service architecture** for simplified deployment:
+
+```
+┌─────────────────────────────────────────────┐
+│              Express.js Server               │
+│                (Port 5000)                   │
+├─────────────────────────────────────────────┤
+│  API Routes (/api/*)        Static Files     │
+│  ├─ /api/test              ├─ /             │
+│  ├─ /api/route-weather     ├─ /static/*      │
+│  ├─ /api/geocode           ├─ /* (catchall)  │
+│  └─ /api/autocomplete      └─ index.html     │
+└─────────────────────────────────────────────┘
+```
+
+### Development vs Production Modes
+
+#### Development Mode (`npm run dev`):
+- Frontend: React dev server on port 3000 (hot reload)
+- Backend: Express server on port 5000 
+- Frontend makes requests to `http://localhost:5000/api/*`
+
+#### Production Mode (`npm start`):
+- Single Express server on port 5000
+- Serves built React files from `/frontend/build`
+- API accessible at `/api/*` (same origin)
+- Frontend served from `/` with catchall routing
+
+### Key Benefits:
+- ✅ **No CORS issues** in production
+- ✅ **Simplified deployment** (one service)
+- ✅ **Cost effective** (single Render service)
+- ✅ **Unified logging** and monitoring
 
 ---
 
@@ -206,53 +269,95 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-## 🚀 Deployment (Render - Option 1: Separate Backend & Static Frontend)
+## 🚀 Deployment (Single Service Architecture)
 
-### 1. Prepare Environment Variables
-Create the following environment variables in the Render dashboard (do NOT commit keys):
-- OPENROUTESERVICE_API_KEY
-- OPENWEATHERMAP_API_KEY
-- (Optional) SSL_VERIFY=false (only if you experience local SSL issues; omit in production)
-- (After frontend deploy) REACT_APP_API_BASE_URL (set in static site) = https://YOUR-BACKEND-SERVICE.onrender.com
-- (Optional) FRONTEND_ORIGIN (set in backend) = https://YOUR-FRONTEND-SERVICE.onrender.com to lock CORS
+### Single Service Deployment (Recommended)
+The application is now configured as a **single service** where the Express backend serves both the API and the React frontend from one unified service. This approach is simpler and more cost-effective for deployment.
 
-### 2. Backend Service (Web Service)
-- Type: Web Service (Node)
-- Root Directory: backend
-- Build Command: npm install
-- Start Command: node index.js
-- Node Version: 18+ (set NODE_VERSION=18 if needed)
+#### Architecture Overview:
+- ✅ Backend serves static React build files
+- ✅ All API routes prefixed with `/api/*`
+- ✅ Frontend uses relative API paths (no CORS issues)
+- ✅ Single deployment, single domain, single service
 
-### 3. Frontend Service (Static Site)
-- Type: Static Site
-- Root Directory: frontend
-- Build Command: npm install && npm run build
-- Publish Directory: build
-- Initially leave REACT_APP_API_BASE_URL empty; after backend deploys copy its URL and add it, then redeploy frontend.
+### 1. Render Deployment (Single Web Service)
 
-### 4. CORS Configuration
-The backend auto-allows all origins unless FRONTEND_ORIGIN is set. Once frontend URL is live, set FRONTEND_ORIGIN to restrict access.
+#### Environment Variables
+Set these in the Render dashboard (do NOT commit real keys):
+```
+OPENROUTESERVICE_API_KEY=your_actual_key_here
+OPENWEATHERMAP_API_KEY=your_actual_key_here
+SSL_VERIFY=false
+NODE_ENV=production
+```
 
-### 5. Optional: render.yaml
-A `render.yaml` file is included for Infrastructure as Code. To use it:
-- Push repo to GitHub
-- In Render: New + Blueprint -> point to repo
-- Fill in unsynced environment variables (API keys, REACT_APP_API_BASE_URL after first backend deploy)
+#### Service Configuration:
+- **Type**: Web Service
+- **Environment**: Node
+- **Build Command**: `npm run render-build`
+- **Start Command**: `npm start`
+- **Auto-Deploy**: Yes
 
-### 6. Testing After Deploy
-1. Hit: https://YOUR-BACKEND-SERVICE.onrender.com/test
-   - Should return { status: 'APIs working', ... }
-2. From browser console on frontend site, verify calls to /route-weather succeed.
-3. Set REACT_APP_API_BASE_URL correctly if 404 or CORS errors appear.
+#### Manual Setup Steps:
+1. Fork/clone this repository to your GitHub
+2. Create a new Web Service on Render
+3. Connect your GitHub repository
+4. Set the environment variables above
+5. Deploy!
 
-### 7. Common Issues
-- 401 errors: Check API key values and rate limits.
-- CORS error: Ensure FRONTEND_ORIGIN matches deployed frontend URL (including https://).
-- Mixed content: Always use https URLs in REACT_APP_API_BASE_URL.
-- Empty weather data: Possible API quota or network restriction; check backend logs.
+### 2. Using render.yaml (Infrastructure as Code)
+For automated deployment, update the included `render.yaml`:
 
-### 8. Redeploy Flow
-- Backend code changes: Trigger backend redeploy only.
-- Frontend env var changes: Update env var -> Save -> Trigger redeploy static site.
+```yaml
+services:
+  - type: web
+    name: travel-weather
+    env: node
+    plan: free
+    buildCommand: npm run render-build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: SSL_VERIFY
+        value: 'false'
+      - key: OPENROUTESERVICE_API_KEY
+        sync: false  # Set in dashboard
+      - key: OPENWEATHERMAP_API_KEY
+        sync: false  # Set in dashboard
+```
+
+### 3. Testing Deployment
+After deployment, test these endpoints:
+1. **Frontend**: `https://your-app.onrender.com` (React app)
+2. **API Test**: `https://your-app.onrender.com/api/test` (should return API status)
+3. **Route Weather**: Use the frontend form to test complete functionality
+
+### 4. Local Development vs Production
+
+#### For Development (Two Services):
+```bash
+npm run dev  # Runs frontend on :3000, backend on :5000
+```
+
+#### For Production Testing (Single Service):
+```bash
+npm run render-build  # Build frontend
+npm start            # Start single service on :5000
+```
+
+### 5. Advantages of Single Service Architecture
+- ✅ **Simplified Deployment**: One service instead of two
+- ✅ **No CORS Issues**: Same origin for frontend and API
+- ✅ **Cost Effective**: Only one Render service needed
+- ✅ **Easy Maintenance**: Single codebase, single deployment
+- ✅ **Environment Consistency**: Same environment for both frontend and backend
+
+### 6. Common Issues & Solutions
+- **Build Failures**: Ensure all dependencies are in package.json files
+- **API Errors**: Check environment variables are set correctly
+- **404 on Routes**: Verify catchall route serves index.html
+- **Empty Weather Data**: Check API key quotas and backend logs
 
 ---

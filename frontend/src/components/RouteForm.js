@@ -7,7 +7,7 @@ const RouteForm = ({ onSearch, loading }) => {
   const [startSuggestions, setStartSuggestions] = useState([]);
   const [endSuggestions, setEndSuggestions] = useState([]);
 
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = '/api';
 
   // Fetch autocomplete suggestions
   const fetchSuggestions = async (query, setSuggestions) => {

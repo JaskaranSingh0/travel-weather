@@ -4,8 +4,9 @@ const axios = require('axios');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const https = require('https');
+const path = require('path'); // Add this line
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Configure axios to handle SSL certificate issues in development
 const httpsAgent = new https.Agent({
@@ -61,7 +62,7 @@ if (allowedOrigin) {
 app.use(express.json());
 
 // Test endpoint to check API connectivity
-app.get('/test', async (req, res) => {
+app.get('/api/test', async (req, res) => {
   try {
     // Test OpenWeatherMap API
     const weatherTest = await axiosInstance.get(`https://api.openweathermap.org/data/2.5/forecast`, {
@@ -98,7 +99,7 @@ app.get('/test', async (req, res) => {
 
 // Basic route to check if the server is running
 app.get(
-  '/route-weather',
+  '/api/route-weather',
   [
     vquery('start').notEmpty().withMessage('Start coordinates are required'),
     vquery('end').notEmpty().withMessage('End coordinates are required')
@@ -541,7 +542,7 @@ app.get(
 });
 
 // Geocoding endpoint
-app.get('/geocode', async (req, res) => {
+app.get('/api/geocode', async (req, res) => {
   const { location } = req.query;
 
   if (!location || location.trim() === '') {
@@ -583,7 +584,7 @@ app.get('/geocode', async (req, res) => {
 
 
 // Endpoint for location autocomplete
-app.get('/autocomplete', async (req, res) => {
+app.get('/api/autocomplete', async (req, res) => {
   const { query } = req.query;
 
   if (!query || query.trim() === '' || query.length < 2) {
@@ -619,6 +620,18 @@ app.get('/autocomplete', async (req, res) => {
   }
 });
 
+
+// --- Serve React App ---
+// This section should come AFTER all your API routes.
+
+// Serve the static files from the React app's build directory
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// The "catchall" handler: for any request that doesn't match one above,
+// send back the app's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+});
 
 
 // Start the server

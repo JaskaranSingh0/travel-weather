@@ -6,7 +6,9 @@ import 'leaflet/dist/leaflet.css';
 import pinIcon from '../assets/pin.png';
 
 // Fix for default markers in React-Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
+try {
+  delete L.Icon.Default.prototype._getIconUrl; // guard in case already deleted
+} catch (e) {}
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
@@ -24,13 +26,14 @@ const customIcon = L.icon({
 });
 
 const MapView = ({ routeCoordinates, weatherData }) => {
-  const initialPosition = routeCoordinates.length
-    ? [routeCoordinates[0][1], routeCoordinates[0][0]]
+  const validRouteCoords = Array.isArray(routeCoordinates) ? routeCoordinates.filter(c => Array.isArray(c) && c.length === 2 && !isNaN(c[0]) && !isNaN(c[1])) : [];
+  const initialPosition = validRouteCoords.length
+    ? [validRouteCoords[0][1], validRouteCoords[0][0]]
     : [32.7266, 74.8794]; // Default center position
 
   // Create a unique key for the map to force re-render when route changes
-  const mapKey = routeCoordinates.length > 0 
-    ? `${routeCoordinates[0][0]}-${routeCoordinates[0][1]}-${routeCoordinates[routeCoordinates.length-1][0]}-${routeCoordinates[routeCoordinates.length-1][1]}`
+  const mapKey = validRouteCoords.length > 0 
+    ? `${validRouteCoords[0][0]}-${validRouteCoords[0][1]}-${validRouteCoords[validRouteCoords.length-1][0]}-${validRouteCoords[validRouteCoords.length-1][1]}-${validRouteCoords.length}`
     : 'default';
 
   return (
@@ -45,23 +48,25 @@ const MapView = ({ routeCoordinates, weatherData }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {routeCoordinates.length > 0 && (
-        <Polyline positions={routeCoordinates.map(coord => [coord[1], coord[0]])} color="blue" />
+      {validRouteCoords.length > 0 && (
+        <Polyline positions={validRouteCoords.map(coord => [coord[1], coord[0]])} color="blue" />
       )}
-      {weatherData &&
-        weatherData.map((point, index) => (
-          <Marker key={index} position={[point.lat, point.lon]} icon={customIcon}>
+      {Array.isArray(weatherData) && weatherData.map((point, index) => {
+        if (isNaN(point.lat) || isNaN(point.lon)) return null;
+        return (
+          <Marker key={`${point.lat}-${point.lon}-${index}`} position={[point.lat, point.lon]} icon={customIcon}>
             <Popup>
               <strong>{point.location}</strong>
               <br />
-              {point.description}, {point.temperature}°C
+              {point.description}, {Math.round(point.temperature)}°C
               <br />
               Humidity: {point.humidity}%
               <br />
               Wind Speed: {point.windSpeed} m/s
             </Popup>
           </Marker>
-        ))}
+        );
+      })}
     </MapContainer>
   );
 };

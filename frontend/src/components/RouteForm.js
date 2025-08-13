@@ -53,6 +53,7 @@ const RouteForm = ({ onSearch, loading }) => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (loading) return; // prevent duplicate submissions while loading
     
     // Validate inputs
     if (!startLocation.trim() || !endLocation.trim()) {
@@ -88,7 +89,7 @@ const RouteForm = ({ onSearch, loading }) => {
             />
             {/* Suggestions for Start Location */}
             {startSuggestions.length > 0 && (
-              <ul className="list-group position-absolute w-100">
+              <ul className="list-group position-absolute w-100" role="listbox" aria-label="Start location suggestions">
                 {startSuggestions.map((suggestion, index) => (
                   <li
                     key={index}
@@ -126,7 +127,7 @@ const RouteForm = ({ onSearch, loading }) => {
             />
             {/* Suggestions for End Location */}
             {endSuggestions.length > 0 && (
-              <ul className="list-group position-absolute w-100">
+              <ul className="list-group position-absolute w-100" role="listbox" aria-label="Destination suggestions">
                 {endSuggestions.map((suggestion, index) => (
                   <li
                     key={index}

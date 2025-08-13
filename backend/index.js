@@ -24,9 +24,20 @@ if (!process.env.OPENROUTESERVICE_API_KEY || !process.env.OPENWEATHERMAP_API_KEY
   process.exit(1);
 }
 
-// Check if API keys are not placeholder values
-if (process.env.OPENROUTESERVICE_API_KEY === 'your_openrouteservice_api_key_here' || 
-    process.env.OPENWEATHERMAP_API_KEY === 'your_openweathermap_api_key_here') {
+// Helper to detect placeholder keys from multiple possible template variants
+const placeholderVariants = [
+  'your_openrouteservice_api_key',
+  'your_openrouteservice_api_key_here',
+  'your_openweathermap_api_key',
+  'your_openweathermap_api_key_here'
+];
+function isPlaceholder(val) {
+  if (!val) return false;
+  const normalized = val.trim().toLowerCase();
+  return placeholderVariants.includes(normalized);
+}
+
+if (isPlaceholder(process.env.OPENROUTESERVICE_API_KEY) || isPlaceholder(process.env.OPENWEATHERMAP_API_KEY)) {
   console.error('Please replace placeholder API keys with actual values in your .env file.');
   process.exit(1);
 }
@@ -128,14 +139,15 @@ app.get(
 
     console.log(`Route has ${coordinates.length} coordinates, distance: ${totalDistance}m, duration: ${totalDuration}s`);
 
-    // Convert distance to kilometers and duration to hours
-    const distanceInKm = (totalDistance / 1000).toFixed(2);
-    const durationInHours = (totalDuration / 3600).toFixed(2);
+    // Keep numeric values separate, derive formatted strings for response/UI
+    const distanceKm = totalDistance / 1000;
+    const durationHours = totalDuration / 3600;
+    const distanceInKm = distanceKm.toFixed(2);
+    const durationInHours = durationHours.toFixed(2);
 
-    // Estimate traffic condition based on duration and distance
+    // Estimate traffic condition based on duration and distance (use numeric values to avoid implicit coercion)
     let trafficCondition;
-    const avgSpeed = (durationInHours > 0 && distanceInKm > 0) ? 
-      (distanceInKm / durationInHours).toFixed(2) : 0;
+    const avgSpeed = (durationHours > 0 && distanceKm > 0) ? (distanceKm / durationHours) : 0;
     if (avgSpeed > 80) {
       trafficCondition = "Light Traffic";
     } else if (avgSpeed > 40) {
@@ -185,6 +197,9 @@ app.get(
     // Always include start point
     indicesToProcess.push(0);
     
+    // Minimum index gap to reduce clustering (at least 1, proportional to coords / target locations)
+    const minIndexGap = Math.max(1, Math.floor(coordinates.length / targetLocations));
+    
     // Find coordinates at regular distance intervals
     for (let locationNum = 1; locationNum < targetLocations - 1; locationNum++) {
       const targetDistance = locationNum * distanceInterval;
@@ -202,9 +217,7 @@ app.get(
       }
       
       // Only add if it's not too close to an already selected point
-      const tooClose = indicesToProcess.some(existingIndex => 
-        Math.abs(closestIndex - existingIndex) < Math.floor(coordinates.length / 100)
-      );
+      const tooClose = indicesToProcess.some(existingIndex => Math.abs(closestIndex - existingIndex) < minIndexGap);
       
       if (!tooClose) {
         indicesToProcess.push(closestIndex);
@@ -231,7 +244,7 @@ app.get(
       console.log(`Processing point ${i}: lat=${lat}, lon=${lon} at ${currentDistance.toFixed(2)}km (${(distanceProgress * 100).toFixed(1)}% of route)`);
 
       // Calculate the estimated arrival time based on distance progress, not coordinate index
-      const estimatedHoursToPoint = durationInHours * distanceProgress;
+      const estimatedHoursToPoint = durationHours * distanceProgress; // use numeric hours
       const estimatedArrivalTime = new Date(departureTime.getTime() + estimatedHoursToPoint * 3600 * 1000);
 
       try {

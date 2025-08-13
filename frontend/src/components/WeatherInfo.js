@@ -12,7 +12,13 @@ const WeatherInfo = ({ weatherData }) => {
     );
   }
 
-  if (Array.isArray(weatherData) && weatherData.length === 0) {
+  if (!Array.isArray(weatherData)) {
+    return (
+      <div className="alert alert-warning">Unexpected weather data format.</div>
+    );
+  }
+
+  if (weatherData.length === 0) {
     return (
       <div className="text-center p-5">
         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌤️</div>
@@ -51,7 +57,7 @@ const WeatherInfo = ({ weatherData }) => {
       )}
       <div className="row">
         {weatherData.map((point, index) => (
-          <div key={index} className="col-lg-6 mb-4">
+          <div key={`${point.lat}-${point.lon}-${index}`} className="col-lg-6 mb-4">
             <div className="weather-card">
               <div className="d-flex align-items-center">
                 <div className="me-4">

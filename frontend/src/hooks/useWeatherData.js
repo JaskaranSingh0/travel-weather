@@ -11,17 +11,24 @@ export const useWeatherData = () => {
   const fetchWeatherData = async (startLocation, endLocation) => {
     setLoading(true);
     setError(null);
+    setData(null); // clear previous results while loading
     try {
       // Convert the start location into coordinates
       const startResponse = await axios.get(`${API_BASE_URL}/geocode`, {
         params: { location: startLocation },
       });
+      if (!startResponse.data || typeof startResponse.data.lat === 'undefined' || typeof startResponse.data.lon === 'undefined') {
+        throw new Error('Failed to geocode start location');
+      }
       const startCoords = `${startResponse.data.lon},${startResponse.data.lat}`;
 
       // Convert the end location into coordinates
       const endResponse = await axios.get(`${API_BASE_URL}/geocode`, {
         params: { location: endLocation },
       });
+      if (!endResponse.data || typeof endResponse.data.lat === 'undefined' || typeof endResponse.data.lon === 'undefined') {
+        throw new Error('Failed to geocode destination');
+      }
       const endCoords = `${endResponse.data.lon},${endResponse.data.lat}`;
 
       // Fetch route, weather, and other data using the coordinates
@@ -30,7 +37,8 @@ export const useWeatherData = () => {
       });
       setData(response.data);
     } catch (err) {
-      setError(err.message || 'Failed to fetch weather data');
+      const message = err.response?.data?.error || err.message || 'Failed to fetch weather data';
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -18,12 +18,19 @@ const App = () => {
   // When data changes, update local state for routeCoordinates, distance, duration, traffic, weatherData
   React.useEffect(() => {
     if (data) {
-      setRouteCoordinates(data.routeCoordinates || []);
+      setRouteCoordinates(Array.isArray(data.routeCoordinates) ? data.routeCoordinates : []);
       setDistance(data.distance || null);
       setDuration(data.duration || null);
       setTraffic(data.traffic || null);
     }
   }, [data]);
+
+  // Reset state on unmount to avoid memory leaks with large data sets
+  React.useEffect(() => {
+    return () => {
+      setRouteCoordinates([]);
+    };
+  }, []);
 
   return (
     <ErrorBoundary>

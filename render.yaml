@@ -9,7 +9,7 @@ services:
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
-        value: 18.20.8
+        value: 20.18.0
       - key: SSL_VERIFY
         value: 'false'
       - key: NODE_ENV

@@ -30,6 +30,11 @@
     position: relative;
 }
 
+/* Allow overflow for the search card so autocomplete can escape the card bounds */
+.card.card--overflow-visible {
+    overflow: visible;
+}
+
 .card::before {
     content: '';
     position: absolute;
@@ -188,6 +193,21 @@
 .list-group-item:hover {
     background: rgba(102, 126, 234, 0.05);
     padding-left: 35px;
+}
+
+/* Autocomplete dropdown styling */
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 2001; /* above map overlay (1000) */
+    max-height: 240px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border-radius: var(--border-radius-small);
+    margin-top: 6px;
 }
 
 /* Map container styling */

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const RouteForm = ({ onSearch, loading }) => {
@@ -6,8 +6,24 @@ const RouteForm = ({ onSearch, loading }) => {
   const [endLocation, setEndLocation] = useState('');
   const [startSuggestions, setStartSuggestions] = useState([]);
   const [endSuggestions, setEndSuggestions] = useState([]);
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [startCoords, setStartCoords] = useState(null); // { lat, lon }
+  const [departureLocal, setDepartureLocal] = useState(''); // yyyy-MM-ddTHH:mm
+  const [geoError, setGeoError] = useState('');
 
   const API_BASE_URL = '/api';
+
+  // Initialize departure time to now in local timezone for datetime-local input
+  useEffect(() => {
+    const now = new Date();
+    // Round to nearest 5 minutes for nicer UI
+    now.setSeconds(0, 0);
+    const minutes = now.getMinutes();
+    now.setMinutes(minutes - (minutes % 5));
+    const pad = (n) => String(n).padStart(2, '0');
+    const value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    setDepartureLocal(value);
+  }, []);
 
   // Fetch autocomplete suggestions
   const fetchSuggestions = async (query, setSuggestions) => {
@@ -26,6 +42,8 @@ const RouteForm = ({ onSearch, loading }) => {
   const handleStartChange = (e) => {
     const query = e.target.value;
     setStartLocation(query);
+  setUseCurrentLocation(false);
+  setStartCoords(null);
     if (query.length > 1) {
       fetchSuggestions(query, setStartSuggestions);
     } else {
@@ -50,6 +68,28 @@ const RouteForm = ({ onSearch, loading }) => {
     setSuggestions([]);
   };
 
+  const handleUseCurrentLocation = async () => {
+    setGeoError('');
+    if (!('geolocation' in navigator)) {
+      setGeoError('Geolocation not supported by this browser.');
+      return;
+    }
+    setUseCurrentLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setStartCoords({ lat: latitude, lon: longitude });
+        setStartLocation('Current Location');
+        setStartSuggestions([]);
+      },
+      (err) => {
+        setUseCurrentLocation(false);
+        setGeoError(err.message || 'Failed to get current location');
+      },
+      { enableHighAccuracy: true, maximumAge: 60000, timeout: 10000 }
+    );
+  };
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,8 +106,20 @@ const RouteForm = ({ onSearch, loading }) => {
       alert('Location names must be at least 2 characters long');
       return;
     }
-    
-    onSearch(startLocation.trim(), endLocation.trim());
+
+    // Build departure timestamp (ms since epoch) from datetime-local
+    let departureTimestamp = Date.now();
+    if (departureLocal) {
+      const dt = new Date(departureLocal);
+      if (!isNaN(dt.getTime())) departureTimestamp = dt.getTime();
+    }
+
+    onSearch({
+      startLocation: startLocation.trim(),
+      endLocation: endLocation.trim(),
+      startCoords: useCurrentLocation && startCoords ? startCoords : null,
+      departureTimestamp
+    });
 
     // Clear suggestions to hide the dropdown
     setStartSuggestions([]);
@@ -86,10 +138,20 @@ const RouteForm = ({ onSearch, loading }) => {
               value={startLocation}
               onChange={handleStartChange}
               placeholder="Where are you starting from?"
+              aria-label="Start location"
             />
+            <div className="d-flex align-items-center mt-2">
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={handleUseCurrentLocation} disabled={loading}>
+                Use current location
+              </button>
+              {useCurrentLocation && startCoords && (
+                <small className="ms-2 text-success">({startCoords.lat.toFixed(4)}, {startCoords.lon.toFixed(4)})</small>
+              )}
+            </div>
+            {geoError && <div className="text-danger mt-1" role="alert">{geoError}</div>}
             {/* Suggestions for Start Location */}
             {startSuggestions.length > 0 && (
-              <ul className="list-group position-absolute w-100" role="listbox" aria-label="Start location suggestions">
+              <ul className="list-group position-absolute w-100 autocomplete-list" role="listbox" aria-label="Start location suggestions">
                 {startSuggestions.map((suggestion, index) => (
                   <li
                     key={index}
@@ -124,10 +186,11 @@ const RouteForm = ({ onSearch, loading }) => {
               value={endLocation}
               onChange={handleEndChange}
               placeholder="Where are you going?"
+              aria-label="Destination"
             />
             {/* Suggestions for End Location */}
             {endSuggestions.length > 0 && (
-              <ul className="list-group position-absolute w-100" role="listbox" aria-label="Destination suggestions">
+              <ul className="list-group position-absolute w-100 autocomplete-list" role="listbox" aria-label="Destination suggestions">
                 {endSuggestions.map((suggestion, index) => (
                   <li
                     key={index}
@@ -140,6 +203,21 @@ const RouteForm = ({ onSearch, loading }) => {
                 ))}
               </ul>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-6">
+          <div className="form-group mb-3">
+            <label className="form-label">🕒 Departure time</label>
+            <input
+              type="datetime-local"
+              className="form-control"
+              value={departureLocal}
+              onChange={(e) => setDepartureLocal(e.target.value)}
+              aria-label="Departure time"
+            />
           </div>
         </div>
       </div>

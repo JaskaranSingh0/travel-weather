@@ -222,7 +222,13 @@ travel-weather/
 
 1. Enter your start and end locations in the form.
 2. Select from autocomplete suggestions.
-3. Click <b>Get Weather Info</b>.
+3. Optionally click "Use current location" to auto-fill your origin.
+4. Optionally set a specific "Departure time" for accurate arrival-time forecasts.
+5. Click <b>Get Weather Info</b>.
+
+Notes:
+- Times shown are local to your device. Arrival times are computed from the chosen departure time and route duration.
+- If network calls to external APIs are blocked, the app will show labeled mock data for demo purposes.
 4. View your route, weather at each waypoint, and traffic analysis on the interactive map.
 
 ---

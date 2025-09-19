@@ -38,7 +38,7 @@ const App = () => {
         <div className="container">
           <h1 className="main-title">🌤️ Travel Weather</h1>
           
-          <div className="card p-4 mb-4">
+          <div className="card card--overflow-visible p-4 mb-4">
             <RouteForm onSearch={fetchWeatherData} loading={loading} />
           </div>
           
@@ -61,11 +61,11 @@ const App = () => {
             <div className="stats-container">
               <div className="stat-item">
                 <div className="stat-value">{distance}</div>
-                <div className="stat-label">Kilometers</div>
+                <div className="stat-label">Distance (km)</div>
               </div>
               <div className="stat-item">
                 <div className="stat-value">{duration}</div>
-                <div className="stat-label">Hours</div>
+                <div className="stat-label">Duration (hrs)</div>
               </div>
               <div className="stat-item">
                 <div className="stat-value">{traffic}</div>

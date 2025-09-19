@@ -102,14 +102,16 @@ app.get(
   '/api/route-weather',
   [
     vquery('start').notEmpty().withMessage('Start coordinates are required'),
-    vquery('end').notEmpty().withMessage('End coordinates are required')
+    vquery('end').notEmpty().withMessage('End coordinates are required'),
+    vquery('departure').optional().isInt({ min: 0 }).withMessage('Departure must be a unix ms timestamp')
   ],
   async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const { start, end } = req.query;
+  const { start, end } = req.query;
+  const departureParam = req.query.departure;
     console.log(`Route-weather request: start=${start}, end=${end}`);
     try {
       // Fetch route data from OpenRouteService
@@ -168,7 +170,11 @@ app.get(
     // Array to store weather data for each point along with arrival time
     const weatherData = [];
     let previousLocation = '';
-    const departureTime = new Date(); // assuming the search is made when the user is leaving
+    // Use provided departure time if available; else current time
+    const departureTime = departureParam ? new Date(Number(departureParam)) : new Date();
+    if (isNaN(departureTime.getTime())) {
+      return res.status(400).json({ error: 'Invalid departure timestamp' });
+    }
 
     // Calculate cumulative distances for proper distribution along route
     console.log(`Calculating route distances for ${coordinates.length} coordinates`);
@@ -253,7 +259,7 @@ app.get(
       console.log(`Processing point ${i}: lat=${lat}, lon=${lon} at ${currentDistance.toFixed(2)}km (${(distanceProgress * 100).toFixed(1)}% of route)`);
 
       // Calculate the estimated arrival time based on distance progress, not coordinate index
-      const estimatedHoursToPoint = durationHours * distanceProgress; // use numeric hours
+  const estimatedHoursToPoint = durationHours * distanceProgress; // use numeric hours
       const estimatedArrivalTime = new Date(departureTime.getTime() + estimatedHoursToPoint * 3600 * 1000);
 
       try {
@@ -326,8 +332,9 @@ app.get(
           lon
         };
 
-        // Format estimated arrival time for each location in "HH:MM" format
-        const arrivalTimeFormatted = estimatedArrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Also include epoch ms to allow client-side local-time rendering
+  const arrivalTimeFormatted = estimatedArrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const arrivalTimeEpoch = estimatedArrivalTime.getTime();
 
         // Fetch location name using reverse geocoding from OpenRouteService
         try {
@@ -389,6 +396,7 @@ app.get(
               location,
               ...weatherDetails,
               estimatedArrivalTime: arrivalTimeFormatted,
+              estimatedArrivalTs: arrivalTimeEpoch,
               routeProgress: Math.round(distanceProgress * 100), // Distance-based progress
               distanceFromStart: currentDistance.toFixed(1) // Add actual distance
             });
@@ -422,6 +430,7 @@ app.get(
             location,
             ...weatherDetails,
             estimatedArrivalTime: arrivalTimeFormatted,
+            estimatedArrivalTs: arrivalTimeEpoch,
             routeProgress: Math.round(distanceProgress * 100),
             distanceFromStart: currentDistance.toFixed(1)
           });
@@ -491,9 +500,9 @@ app.get(
           locationLabel = `Location at ${targetDistance.toFixed(0)}km`;
         }
         
-        const departureTime = new Date();
-        const estimatedHoursToPoint = durationInHours * distanceProgress;
-        const estimatedArrivalTime = new Date(departureTime.getTime() + estimatedHoursToPoint * 3600 * 1000);
+  const mockDeparture = departureTime; // reuse validated departure
+  const estimatedHoursToPoint = durationHours * distanceProgress;
+  const estimatedArrivalTime = new Date(mockDeparture.getTime() + estimatedHoursToPoint * 3600 * 1000);
         
         weatherData.push({
           location: locationLabel,
@@ -505,6 +514,7 @@ app.get(
           lat,
           lon,
           estimatedArrivalTime: estimatedArrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          estimatedArrivalTs: estimatedArrivalTime.getTime(),
           routeProgress: Math.round(distanceProgress * 100),
           distanceFromStart: targetDistance.toFixed(1),
           isMockData: true // Flag to indicate this is mock data

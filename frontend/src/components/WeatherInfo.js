@@ -55,6 +55,9 @@ const WeatherInfo = ({ weatherData }) => {
           <span>📡 Weather data is simulated due to network restrictions. Real weather data requires network access to external APIs.</span>
         </div>
       )}
+      <div className="alert alert-secondary py-2 mb-4" role="note">
+        Times shown are local to your device.
+      </div>
       <div className="row">
         {weatherData.map((point, index) => (
           <div key={`${point.lat}-${point.lon}-${index}`} className="col-lg-6 mb-4">
@@ -103,7 +106,7 @@ const WeatherInfo = ({ weatherData }) => {
                     <div className="col-4">
                       <small style={{ color: '#718096' }}>🕐 Arrival</small>
                       <div style={{ fontWeight: '600', color: '#2d3748' }}>
-                        {point.estimatedArrivalTime}
+                        {point.estimatedArrivalTs ? new Date(point.estimatedArrivalTs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (point.estimatedArrivalTime || '—')}
                       </div>
                     </div>
                     <div className="col-4">

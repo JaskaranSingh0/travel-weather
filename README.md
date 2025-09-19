@@ -1,9 +1,9 @@
 # Travel Weather
 
+**LIVE LINK**: [https://travel-weather.onrender.com/]
+
 ## Overview
 Travel Weather is a web application designed to provide travelers with real-time and predictive weather information along their travel routes. The application integrates route mapping and weather forecasting to help users plan their journeys effectively and safely. By displaying weather conditions for key points along the route at the estimated time of arrival, this application addresses the gap between navigation tools and weather prediction services.
-
-**LIVE LINK** [https://travel-weather.onrender.com/]
 
 ## Features
 - **Route Mapping**: Displays the best travel routes between two locations using the OpenRouteService API.
